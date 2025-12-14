@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://vura-enerji-platform.netlify.app/sitemap.xml
