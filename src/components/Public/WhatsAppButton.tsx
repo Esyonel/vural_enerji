@@ -1,11 +1,16 @@
 import React from 'react';
 import { useData } from '../../services/dataProvider';
+import { initialSiteContent } from '../../services/mockData';
 
 export const WhatsAppButton: React.FC = () => {
     const { siteContent } = useData();
-    const whatsappLink = siteContent.socialLinks?.find(s => s.platform === 'whatsapp');
+    let whatsappLink = siteContent.socialLinks?.find(s => s.platform === 'whatsapp');
 
-    // Return null if no whatsapp link is defined or if URL is empty
+    if (!whatsappLink) {
+        whatsappLink = initialSiteContent.socialLinks?.find(s => s.platform === 'whatsapp');
+    }
+
+    // Return null only if no whatsapp link is defined even after fallback
     if (!whatsappLink || !whatsappLink.url) return null;
 
     let finalUrl = whatsappLink.url;
