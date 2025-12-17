@@ -1,10 +1,14 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useData } from '../../services/dataProvider';
 import { SolarCalculator } from './SolarCalculator';
+import { LanguageSwitcher } from '../LanguageSwitcher';
+import { ThemeToggle } from '../ThemeToggle';
 
 export const Header: React.FC = () => {
+    const { t } = useTranslation();
     const { currentUser } = useData();
     const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -58,17 +62,21 @@ export const Header: React.FC = () => {
 
                         {/* Desktop Menu */}
                         <nav className="hidden xl:flex items-center gap-6 xl:gap-8">
-                            <button onClick={() => handleNavigation('products')} className="text-sm font-semibold hover:text-primary transition-colors">Ürünler</button>
-                            <Link to="/about" className="text-sm font-semibold hover:text-primary transition-colors">Hakkımızda</Link>
-                            <Link to="/vision-mission" className="text-sm font-semibold hover:text-primary transition-colors">Vizyon & Misyon</Link>
-                            <Link to="/blog" className="text-sm font-semibold hover:text-primary transition-colors">Blog</Link>
-                            <Link to="/career" className="text-sm font-semibold hover:text-primary transition-colors">Kariyer</Link>
-                            <Link to="/contact" className="text-sm font-semibold hover:text-primary transition-colors">Bize Ulaşın</Link>
+                            <button onClick={() => handleNavigation('products')} className="text-sm font-semibold hover:text-primary transition-colors">{t('nav.products')}</button>
+                            <Link to="/about" className="text-sm font-semibold hover:text-primary transition-colors">{t('nav.about')}</Link>
+                            <Link to="/vision-mission" className="text-sm font-semibold hover:text-primary transition-colors">{t('nav.vision')}</Link>
+                            <Link to="/blog" className="text-sm font-semibold hover:text-primary transition-colors">{t('nav.blog')}</Link>
+                            <Link to="/career" className="text-sm font-semibold hover:text-primary transition-colors">{t('nav.career')}</Link>
+                            <Link to="/contact" className="text-sm font-semibold hover:text-primary transition-colors">{t('nav.contact')}</Link>
+
+                            <LanguageSwitcher />
+                            <ThemeToggle />
+
                             <button
                                 onClick={() => setIsCalculatorOpen(true)}
                                 className="text-white bg-accent px-4 py-2 rounded-full text-sm font-bold hover:bg-orange-600 transition-colors flex items-center gap-2 shadow-lg shadow-orange-500/20"
                             >
-                                Solar Hesaplama
+                                {t('nav.calculator')}
                                 <span className="material-symbols-outlined text-[18px]">calculate</span>
                             </button>
                         </nav>
@@ -82,13 +90,13 @@ export const Header: React.FC = () => {
                                     <span className="text-sm font-bold text-gray-700 dark:text-gray-200 group-hover:text-primary transition-colors flex items-center">
                                         {currentUser.role === 'admin' ? (
                                             <span className="material-symbols-outlined text-green-600 dark:text-green-500 text-[24px]">security</span>
-                                        ) : 'Profilim'}
+                                        ) : t('nav.profile')}
                                     </span>
                                 </Link>
                             ) : (
                                 <>
                                     <Link to="/login" className="hidden sm:flex items-center justify-center px-5 py-2 rounded-full bg-primary/10 text-primary font-bold hover:bg-primary hover:text-black border border-primary/20 transition-all text-sm">
-                                        Giriş Yap
+                                        {t('nav.login')}
                                     </Link>
                                     {/* Shield Icon for Admin Entrance */}
                                     <Link to="/login" className="flex items-center justify-center size-10 rounded-full bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors" title="Yönetici Girişi">
@@ -112,21 +120,25 @@ export const Header: React.FC = () => {
                 {isMobileMenuOpen && (
                     <div className="xl:hidden bg-white dark:bg-[#1a2e22] border-t border-gray-100 dark:border-white/5 animate-fade-in-up">
                         <nav className="flex flex-col p-4 gap-2">
-                            <button onClick={() => handleNavigation('products')} className="text-left px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-black/20 font-semibold">Ürünler</button>
-                            <Link to="/about" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-black/20 font-semibold">Hakkımızda</Link>
-                            <Link to="/vision-mission" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-black/20 font-semibold">Vizyon & Misyon</Link>
-                            <Link to="/blog" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-black/20 font-semibold">Blog</Link>
-                            <Link to="/career" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-black/20 font-semibold">Kariyer</Link>
-                            <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-black/20 font-semibold">Bize Ulaşın</Link>
+                            <div className="px-4 py-2 flex items-center gap-4">
+                                <LanguageSwitcher />
+                                <ThemeToggle />
+                            </div>
+                            <button onClick={() => handleNavigation('products')} className="text-left px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-black/20 font-semibold">{t('nav.products')}</button>
+                            <Link to="/about" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-black/20 font-semibold">{t('nav.about')}</Link>
+                            <Link to="/vision-mission" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-black/20 font-semibold">{t('nav.vision')}</Link>
+                            <Link to="/blog" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-black/20 font-semibold">{t('nav.blog')}</Link>
+                            <Link to="/career" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-black/20 font-semibold">{t('nav.career')}</Link>
+                            <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-black/20 font-semibold">{t('nav.contact')}</Link>
                             <button
                                 onClick={() => { setIsCalculatorOpen(true); setIsMobileMenuOpen(false); }}
                                 className="text-left px-4 py-3 rounded-xl bg-accent/10 text-accent font-bold"
                             >
-                                Solar Hesaplama
+                                {t('nav.calculator')}
                             </button>
                             {!currentUser && (
                                 <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-black/20 font-semibold text-primary">
-                                    Giriş Yap
+                                    {t('nav.login')}
                                 </Link>
                             )}
                         </nav>

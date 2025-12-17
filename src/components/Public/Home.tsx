@@ -3,10 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useData } from '../../services/dataProvider';
 import { SEO } from '../SEO';
 import { Product } from '../../types';
+import { QuoteRequestModal } from './QuoteRequestModal';
+import { SolarCalculator } from './SolarCalculator';
+
 
 export const Home: React.FC = () => {
-    const { products, siteContent, categories, addQuote } = useData();
+    const { products, siteContent, categories, addQuote, projects } = useData();
     const [quoteProduct, setQuoteProduct] = useState<Product | null>(null);
+    const [isSolarCalculatorOpen, setIsSolarCalculatorOpen] = useState(false);
+    const [solarPackages, setSolarPackages] = useState<any[]>([]);
+
     const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const navigate = useNavigate();
@@ -46,6 +52,35 @@ export const Home: React.FC = () => {
         return () => clearInterval(interval);
     }, [siteContent.heroImages]);
 
+    // Fetch Solar Packages with Products
+    useEffect(() => {
+        const fetchSolarPackages = async () => {
+            try {
+                const res = await fetch('/api/solar-packages?status=active');
+                const packages = await res.json();
+
+                // Fetch products for each package
+                const packagesWithProducts = await Promise.all(
+                    packages.map(async (pkg: any) => {
+                        try {
+                            const detailRes = await fetch(`/api/solar-packages/${pkg.id}`);
+                            const detail = await detailRes.json();
+                            return detail;
+                        } catch (e) {
+                            console.error(`Failed to fetch details for package ${pkg.id}:`, e);
+                            return pkg;
+                        }
+                    })
+                );
+
+                setSolarPackages(packagesWithProducts);
+            } catch (e) {
+                console.error('Failed to fetch solar packages:', e);
+            }
+        };
+        fetchSolarPackages();
+    }, []);
+
     return (
         <div className="-mt-24">
             <SEO
@@ -55,36 +90,36 @@ export const Home: React.FC = () => {
             />
 
 
-            <div className="relative w-full h-[850px] overflow-hidden bg-black group -mt-24">
+            <div className="relative w-full h-[425px] overflow-hidden bg-black group -mt-24">
                 {/* Slider Images */}
                 {siteContent.heroImages.map((img, index) => (
                     <div
                         key={index}
                         className={`absolute inset-0 w-full h-full bg-cover bg-center transition-all duration-1000 ease-in-out transform ${index === currentHeroIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
-                        style={{ backgroundImage: `url("${img}")` }}
+                        style={{ backgroundImage: `url("${img}")`, backgroundPosition: 'center 40%' }}
                     ></div>
                 ))}
 
                 <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-10"></div>
                 <div className="relative h-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center z-20 pt-20">
                     <div className="max-w-4xl">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 backdrop-blur-md border border-primary/40 text-primary text-sm font-bold uppercase tracking-widest mb-8">
-                            <span className="w-2.5 h-2.5 rounded-full bg-primary animate-ping"></span>
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 backdrop-blur-md border border-primary/40 text-primary text-xs font-bold uppercase tracking-widest mb-4">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
                             Sürdürülebilir Gelecek
                         </div>
-                        <h1 className="text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[1.05] tracking-tight mb-8 drop-shadow-lg">
+                        <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-white leading-[1.05] tracking-tight mb-4 drop-shadow-lg">
                             {siteContent.heroTitle.split(',').map((part, i) => (
                                 <span key={i} className={i === 1 ? "text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-400 block" : "block"}>
                                     {part}{i === 0 && ','}
                                 </span>
                             ))}
                         </h1>
-                        <p className="text-gray-300 text-lg md:text-xl lg:text-2xl font-normal leading-relaxed mb-12 max-w-2xl opacity-90">
+                        <p className="text-gray-300 text-base md:text-lg lg:text-xl font-normal leading-relaxed mb-6 max-w-2xl opacity-90">
                             {siteContent.heroSubtitle}
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-5">
-                            <Link to="/projects" className="h-14 px-10 rounded-xl bg-primary text-black hover:bg-[#0fd630] transition-all transform hover:-translate-y-1 font-bold text-lg shadow-[0_0_30px_rgba(19,236,55,0.4)] flex items-center justify-center gap-3">
-                                {siteContent.heroButtonText}
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <Link to="/projects" className="h-12 px-8 rounded-xl bg-primary text-black hover:bg-[#0fd630] transition-all transform hover:-translate-y-1 font-bold text-base shadow-[0_0_30px_rgba(19,236,55,0.4)] flex items-center justify-center gap-2">
+                                Tamamlanan Projeler
                                 <span className="material-symbols-outlined">arrow_outward</span>
                             </Link>
                         </div>
@@ -103,8 +138,114 @@ export const Home: React.FC = () => {
                 </div>
             </div>
 
+            {/* Solar Packages Badge - Always Visible */}
+            <div className="-mt-8 py-6 px-4 sm:px-6 lg:px-8 relative z-50">
+                <div className="max-w-[1400px] mx-auto">
+                    <div className="text-center">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border-2 border-orange-500 text-orange-500 text-xs font-bold uppercase tracking-wider shadow-lg">
+                            <span className="material-symbols-outlined text-[16px]">wb_sunny</span>
+                            Solar Paketler
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Solar Packages Section */}
+            {solarPackages.length > 0 && (
+                <div className="py-4 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white dark:from-black/20 dark:to-background-dark border-b border-gray-200 dark:border-white/5">
+                    <div className="max-w-[1400px] mx-auto">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {solarPackages.map((pkg) => (
+                                <div key={pkg.id} className="group bg-white dark:bg-surface-dark rounded-2xl border-2 border-gray-200 dark:border-gray-800 hover:border-orange-500 dark:hover:border-orange-500 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:-translate-y-2">
+                                    {/* Package Image */}
+                                    {pkg.imageUrl && (
+                                        <div className="relative h-48 overflow-hidden">
+                                            <img
+                                                src={pkg.imageUrl}
+                                                alt={pkg.name}
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                            <div className="absolute top-4 right-4">
+                                                <span className="px-3 py-1 rounded-full bg-orange-500 text-white text-xs font-bold uppercase tracking-wider shadow-lg">
+                                                    Popüler
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="p-6">
+                                        {/* Package Title */}
+                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-orange-500 transition-colors">
+                                            {pkg.name}
+                                        </h3>
+                                        <p className="text-gray-600 dark:text-gray-400 text-sm mb-6 line-clamp-2">
+                                            {pkg.description}
+                                        </p>
+
+                                        {/* Package Details */}
+                                        <div className="space-y-3 mb-6">
+                                            <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
+                                                <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                                    <span className="material-symbols-outlined text-[18px]">receipt_long</span>
+                                                    Fatura Aralığı
+                                                </span>
+                                                <span className="text-sm font-bold text-slate-900 dark:text-white">
+                                                    {pkg.minBill} - {pkg.maxBill} TL
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
+                                                <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                                    <span className="material-symbols-outlined text-[18px]">bolt</span>
+                                                    Sistem Gücü
+                                                </span>
+                                                <span className="text-sm font-bold text-slate-900 dark:text-white">
+                                                    {pkg.systemPower}
+                                                </span>
+                                            </div>
+                                            {pkg.savings && (
+                                                <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
+                                                    <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                                        <span className="material-symbols-outlined text-[18px]">savings</span>
+                                                        Yıllık Tasarruf
+                                                    </span>
+                                                    <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                                                        {pkg.savings}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {pkg.paybackPeriod && (
+                                                <div className="flex items-center justify-between py-2">
+                                                    <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                                        <span className="material-symbols-outlined text-[18px]">schedule</span>
+                                                        Geri Ödeme
+                                                    </span>
+                                                    <span className="text-sm font-bold text-slate-900 dark:text-white">
+                                                        {pkg.paybackPeriod}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+
+
+                                        {/* CTA Button - View Details */}
+                                        <Link
+                                            to={`/solar-package/${pkg.id}`}
+                                            className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 group-hover:scale-105 text-sm"
+                                        >
+                                            <span className="material-symbols-outlined text-lg">info</span>
+                                            Detaylı İncele
+                                        </Link>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Products Grid */}
-            <div id="products" className="py-12 px-4 sm:px-6 lg:px-8">
+            <div id="products" className="py-3 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-[1400px] mx-auto">
 
                     {/* Category Filter */}
@@ -203,6 +344,8 @@ export const Home: React.FC = () => {
                 </div>
             </div>
 
+
+
             {/* Features (Services) */}
             <div id="services" className="bg-black text-white py-24 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
@@ -264,66 +407,8 @@ export const Home: React.FC = () => {
                 </div>
             )}
 
-            <footer className="bg-white dark:bg-[#0c180e] border-t border-gray-200 dark:border-white/5 pt-16 pb-8 mt-auto">
-                <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
-                        <div className="col-span-1 lg:col-span-2">
-                            <div className="flex items-center gap-2 mb-6">
-                                <img
-                                    src="/logo.png"
-                                    alt="Vural Enerji Logo"
-                                    className="h-10 w-auto object-contain rounded-full"
-                                />
-                                <span className="text-2xl font-bold font-display text-slate-900 dark:text-white">Vural Enerji</span>
-                            </div>
-                            <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm leading-relaxed">
-                                {siteContent.aboutText}
-                            </p>
-                            <div className="flex gap-4">
-                                {siteContent.socialLinks.map((social, i) => (
-                                    <SocialLink key={i} icon={social.icon} url={social.url} />
-                                ))}
-                            </div>
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-lg text-slate-900 dark:text-white mb-6">Kurumsal</h4>
-                            <ul className="space-y-3 text-sm text-gray-500 dark:text-gray-400">
-                                <li><Link to="/about" className="hover:text-primary transition-colors block">Hakkımızda</Link></li>
-                                <li><Link to="/vision-mission" className="hover:text-primary transition-colors block">Vizyon & Misyon</Link></li>
-                                <li><Link to="/career" className="hover:text-primary transition-colors block">Kariyer</Link></li>
-                                <li><Link to="/blog" className="hover:text-primary transition-colors block">Blog</Link></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-lg text-slate-900 dark:text-white mb-6">İletişim</h4>
-                            <ul className="space-y-4 text-sm text-gray-500 dark:text-gray-400">
-                                <li className="flex items-start gap-3">
-                                    <span className="material-symbols-outlined text-primary mt-0.5">location_on</span>
-                                    <span>{siteContent.contactAddress}</span>
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <span className="material-symbols-outlined text-primary">phone_in_talk</span>
-                                    <span className="font-semibold text-slate-900 dark:text-gray-200">{siteContent.contactPhone}</span>
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <span className="material-symbols-outlined text-primary">mail</span>
-                                    <span>{siteContent.contactEmail}</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="border-t border-gray-200 dark:border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p className="text-sm text-gray-500">© 2024 Vural Enerji. Tüm hakları saklıdır.</p>
-                        <div className="flex gap-6 text-sm text-gray-500">
-                            <a className="hover:text-primary transition-colors">Gizlilik Politikası</a>
-                            <a className="hover:text-primary transition-colors">Kullanım Şartları</a>
-                            <a className="hover:text-primary transition-colors">Çerez Politikası</a>
-                        </div>
-                    </div>
-                </div>
-            </footer>
-
             {quoteProduct && <QuoteRequestModal product={quoteProduct} onClose={() => setQuoteProduct(null)} />}
+            {isSolarCalculatorOpen && <SolarCalculator onClose={() => setIsSolarCalculatorOpen(false)} />}
         </div>
     );
 };
@@ -353,8 +438,10 @@ export const ProductCard: React.FC<{ product: Product, onRequestQuote: (product:
                 <p className="text-gray-500 dark:text-gray-400 text-xs mb-4 line-clamp-2">{product.sku}</p>
             </Link>
             <div className="flex flex-wrap gap-2 mb-6">
-                {product.specs?.map((spec: string, i: number) => (
-                    <span key={i} className="px-2 py-1 rounded-md bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 text-[10px] font-bold">{spec}</span>
+                {product.specs && typeof product.specs === 'object' && Object.entries(product.specs).map(([key, value], i) => (
+                    <span key={i} className="px-2 py-1 rounded-md bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 text-[10px] font-bold">
+                        {key}: {value}
+                    </span>
                 ))}
             </div>
             <div className="mt-auto pt-4 border-t border-gray-100 dark:border-white/5">
@@ -400,146 +487,6 @@ const FeatureCard = ({ icon, title, text, color }: any) => {
     );
 };
 
-const SocialLink: React.FC<{ icon: string, url: string }> = ({ icon, url }) => (
-    <a href={url} className="size-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-primary hover:text-black transition-all cursor-pointer">
-        <span className="material-symbols-outlined">{icon}</span>
-    </a>
-);
 
-export const QuoteRequestModal: React.FC<{ product: Product, onClose: () => void }> = ({ product, onClose }) => {
-    const { addQuote } = useData();
-    const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
-    const [formData, setFormData] = useState({
-        name: '',
-        company: '',
-        phone: '',
-        email: '',
-        message: `Merhaba, ${product.name} (SKU: ${product.sku}) ürünü için fiyat teklifi almak istiyorum.`,
-        notes: ''
-    });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setStatus('submitting');
 
-        await addQuote({
-            customerName: formData.name,
-            companyName: formData.company,
-            phone: formData.phone,
-            email: formData.email,
-            message: formData.message,
-            notes: formData.notes,
-            productName: product.name,
-            productSku: product.sku
-        });
-
-        setStatus('success');
-    };
-
-    if (status === 'success') {
-        return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-                <div className="bg-white dark:bg-[#1a2e22] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-white/10 p-8 text-center animate-fade-in-up">
-                    <div className="size-20 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <span className="material-symbols-outlined text-5xl">check_circle</span>
-                    </div>
-                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Talebiniz Alındı!</h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-8">
-                        Fiyat teklifi isteğiniz başarıyla tarafımıza ulaştı. Satış ekibimiz en kısa sürede sizinle iletişime geçecektir.
-                    </p>
-                    <button
-                        onClick={onClose}
-                        className="w-full h-12 bg-primary hover:bg-green-600 text-black font-bold rounded-xl transition-colors shadow-lg"
-                    >
-                        Tamam
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
-            <div className="bg-white dark:bg-[#1a2e22] w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-white/10 flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-                <div className="p-6 bg-primary/10 border-b border-primary/20 flex items-center justify-between shrink-0">
-                    <div className="flex items-center gap-3">
-                        <span className="material-symbols-outlined text-primary text-3xl">request_quote</span>
-                        <div>
-                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Fiyat Teklifi Al</h3>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">Ürün: {product.name}</p>
-                        </div>
-                    </div>
-                    <button onClick={onClose} className="p-2 hover:bg-black/10 rounded-full transition-colors">
-                        <span className="material-symbols-outlined">close</span>
-                    </button>
-                </div>
-
-                <div className="p-8 overflow-y-auto">
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 dark:bg-black/20 rounded-xl border border-gray-100 dark:border-white/5">
-                            <div className="size-16 rounded-lg bg-cover bg-center shrink-0" style={{ backgroundImage: `url('${product.imageUrl}')` }}></div>
-                            <div>
-                                <p className="font-bold text-slate-900 dark:text-white text-sm line-clamp-1">{product.name}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">{product.sku}</p>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="col-span-2">
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Ad Soyad <span className="text-red-500">*</span></label>
-                                <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full h-11 px-4 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-black/20 focus:ring-primary focus:border-primary text-slate-900 dark:text-white" />
-                            </div>
-                            <div className="col-span-2 sm:col-span-1">
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Firma Adı</label>
-                                <input type="text" value={formData.company} onChange={e => setFormData({ ...formData, company: e.target.value })} className="w-full h-11 px-4 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-black/20 focus:ring-primary focus:border-primary text-slate-900 dark:text-white" />
-                            </div>
-                            <div className="col-span-2 sm:col-span-1">
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Telefon <span className="text-red-500">*</span></label>
-                                <input required type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className="w-full h-11 px-4 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-black/20 focus:ring-primary focus:border-primary text-slate-900 dark:text-white" />
-                            </div>
-                            <div className="col-span-2">
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">E-posta <span className="text-red-500">*</span></label>
-                                <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full h-11 px-4 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-black/20 focus:ring-primary focus:border-primary text-slate-900 dark:text-white" />
-                            </div>
-                            <div className="col-span-2">
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Mesajınız</label>
-                                <textarea rows={3} value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} className="w-full p-4 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-black/20 focus:ring-primary focus:border-primary text-slate-900 dark:text-white"></textarea>
-                            </div>
-                            <div className="col-span-2">
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Ek Notlar (Opsiyonel)</label>
-                                <textarea rows={2} value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} className="w-full p-4 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-black/20 focus:ring-primary focus:border-primary text-slate-900 dark:text-white" placeholder="Varsa eklemek istediğiniz teknik detaylar veya özel notlar..."></textarea>
-                            </div>
-                        </div>
-
-                        <div className="pt-4 flex gap-3">
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="flex-1 h-12 bg-gray-200 dark:bg-white/5 hover:bg-gray-300 dark:hover:bg-white/10 text-slate-700 dark:text-white font-bold rounded-xl transition-colors"
-                            >
-                                İptal
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={status === 'submitting'}
-                                className="flex-[2] h-12 bg-primary hover:bg-green-600 text-black font-bold rounded-xl transition-colors shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-70"
-                            >
-                                {status === 'submitting' ? (
-                                    <>
-                                        <span className="size-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></span>
-                                        Gönderiliyor...
-                                    </>
-                                ) : (
-                                    <>
-                                        <span>Teklif İste</span>
-                                        <span className="material-symbols-outlined text-[20px]">send</span>
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    );
-};

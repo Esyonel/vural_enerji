@@ -4,10 +4,11 @@ import { useData } from '../../services/dataProvider';
 import { Feature, NewsItem, Partner } from '../../types';
 
 export const ContentEditor: React.FC = () => {
-    const { siteContent, updateSiteContent, isLoading } = useData();
+    const { siteContent, updateSiteContent, isLoading, mediaItems } = useData();
     const [formData, setFormData] = useState(siteContent);
     const [isSaving, setIsSaving] = useState(false);
     const [newHeroImage, setNewHeroImage] = useState('');
+    const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
 
     // News States
     const [newNews, setNewNews] = useState<Partial<NewsItem>>({ title: '', summary: '', category: 'general', sourceName: '', sourceUrl: '' });
@@ -211,12 +212,21 @@ export const ContentEditor: React.FC = () => {
                                     onChange={(e) => setNewHeroImage(e.target.value)}
                                     placeholder="Yeni resim URL'si yapıştırın..."
                                     className="flex-1 rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-black/20 text-sm"
+                                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addHeroImage())}
                                 />
                                 <button
                                     onClick={addHeroImage}
                                     className="px-3 bg-slate-200 dark:bg-slate-700 hover:bg-primary hover:text-black dark:hover:text-black transition-colors rounded-lg"
+                                    title="URL Ekle"
                                 >
                                     <span className="material-symbols-outlined">add</span>
+                                </button>
+                                <button
+                                    onClick={() => setIsMediaPickerOpen(true)}
+                                    className="px-3 bg-blue-500 hover:bg-blue-600 text-white transition-colors rounded-lg flex items-center gap-1"
+                                    title="Medya Kütüphanesinden Seç"
+                                >
+                                    <span className="material-symbols-outlined">photo_library</span>
                                 </button>
                             </div>
                         </div>
@@ -483,6 +493,53 @@ export const ContentEditor: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Media Picker Modal */}
+            {isMediaPickerOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setIsMediaPickerOpen(false)}>
+                    <div className="bg-white dark:bg-[#1a2e22] w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-black/20">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Medya Kütüphanesinden Seç</h3>
+                            <button onClick={() => setIsMediaPickerOpen(false)} className="text-slate-500 hover:text-red-500 transition-colors">
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto flex-1">
+                            {mediaItems.length === 0 ? (
+                                <div className="text-center py-12 text-slate-500">
+                                    <span className="material-symbols-outlined text-6xl mb-4 opacity-30">photo_library</span>
+                                    <p>Medya kütüphanenizde henüz resim yok.</p>
+                                    <p className="text-sm mt-2">Medya Yönetimi sayfasından resim yükleyebilirsiniz.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                    {mediaItems.filter(item => item.type === 'image').map(item => (
+                                        <div
+                                            key={item.id}
+                                            onClick={() => {
+                                                setFormData({
+                                                    ...formData,
+                                                    heroImages: [...(formData.heroImages || []), item.url]
+                                                });
+                                                setIsMediaPickerOpen(false);
+                                            }}
+                                            className="relative group aspect-video rounded-lg overflow-hidden border-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:border-primary hover:scale-105 transition-all"
+                                        >
+                                            <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <span className="material-symbols-outlined text-white text-4xl">add_circle</span>
+                                            </div>
+                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                                                <p className="text-white text-xs truncate">{item.name}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

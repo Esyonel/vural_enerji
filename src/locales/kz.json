@@ -1,0 +1,25 @@
+{
+    "nav": {
+        "products": "Өнімдер",
+        "about": "Біз туралы",
+        "vision": "Миссия мен көзқарас",
+        "blog": "Блог",
+        "career": "Мансап",
+        "contact": "Байланыс",
+        "calculator": "Калькулятор",
+        "login": "Кіру",
+        "profile": "Профиль"
+    },
+    "hero": {
+        "status": "Тұрақты болашақ",
+        "button": "Жобаларды көру"
+    },
+    "common": {
+        "all": "Барлығы",
+        "requestQuote": "Баға сұрау",
+        "outOfStock": "Қоймада жоқ",
+        "criticalStock": "Аз қалды",
+        "inStock": "Қоймада бар",
+        "new": "Жаңа"
+    }
+}

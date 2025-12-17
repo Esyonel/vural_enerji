@@ -45,7 +45,7 @@ export const AdminLayout: React.FC = () => {
                             />
                             <div className="flex flex-col">
                                 <h1 className="text-base font-bold leading-tight tracking-tight dark:text-white">Vural Enerji</h1>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">Yönetim Paneli</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">Yönetim Paneli <span className="opacity-60 text-[10px] ml-1">v1.0.0</span></p>
                             </div>
                         </div>
                         <button onClick={closeSidebar} className="md:hidden text-slate-500 hover:text-slate-800 dark:hover:text-white">
@@ -56,6 +56,7 @@ export const AdminLayout: React.FC = () => {
                         <NavItem to="/admin" icon="dashboard" label="Kontrol Paneli" end onClick={closeSidebar} />
                         <NavItem to="/admin/quotes" icon="request_quote" label="Teklif Takip" onClick={closeSidebar} />
                         <NavItem to="/admin/products" icon="inventory_2" label="Ürün Yönetimi" onClick={closeSidebar} />
+                        <NavItem to="/admin/solar-packages" icon="wb_sunny" label="Solar Paketler" onClick={closeSidebar} />
                         <NavItem to="/admin/media" icon="perm_media" label="Medya Kütüphanesi" onClick={closeSidebar} />
                         <NavItem to="/admin/categories" icon="category" label="Kategori Yönetimi" onClick={closeSidebar} />
                         <NavItem to="/admin/projects" icon="solar_power" label="Projeler" onClick={closeSidebar} />

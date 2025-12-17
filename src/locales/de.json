@@ -1,0 +1,25 @@
+{
+    "nav": {
+        "products": "Produkte",
+        "about": "Über uns",
+        "vision": "Vision & Mission",
+        "blog": "Blog",
+        "career": "Karriere",
+        "contact": "Kontakt",
+        "calculator": "Solarrechner",
+        "login": "Anmelden",
+        "profile": "Mein Profil"
+    },
+    "hero": {
+        "status": "Nachhaltige Zukunft",
+        "button": "Projekte ansehen"
+    },
+    "common": {
+        "all": "Alle",
+        "requestQuote": "Angebot anfordern",
+        "outOfStock": "Nicht vorrätig",
+        "criticalStock": "Knapper Bestand",
+        "inStock": "Auf Lager",
+        "new": "Neu"
+    }
+}

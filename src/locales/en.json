@@ -1,0 +1,25 @@
+{
+    "nav": {
+        "products": "Products",
+        "about": "About Us",
+        "vision": "Vision & Mission",
+        "blog": "Blog",
+        "career": "Career",
+        "contact": "Contact Us",
+        "calculator": "Solar Calculator",
+        "login": "Login",
+        "profile": "My Profile"
+    },
+    "hero": {
+        "status": "Sustainable Future",
+        "button": "View Projects"
+    },
+    "common": {
+        "all": "All",
+        "requestQuote": "Request Quote",
+        "outOfStock": "Out of Stock",
+        "criticalStock": "Low Stock",
+        "inStock": "In Stock",
+        "new": "New"
+    }
+}

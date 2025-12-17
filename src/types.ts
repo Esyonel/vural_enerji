@@ -26,10 +26,20 @@ export interface Project {
     id: string;
     title: string;
     location: string;
+    coordinates?: {
+        lat: number;
+        lng: number;
+    };
     capacity: string;
     date: string;
     imageUrl: string;
     description: string;
+    stats?: {
+        power: string;
+        panels: string;
+        area: string;
+        co2: string;
+    };
 }
 
 export interface Order {
@@ -76,7 +86,7 @@ export interface Feature {
 }
 
 export interface SocialLink {
-    platform: 'facebook' | 'twitter' | 'instagram' | 'linkedin';
+    platform: 'facebook' | 'twitter' | 'instagram' | 'linkedin' | 'whatsapp';
     url: string;
     icon: string;
 }
@@ -201,4 +211,29 @@ export interface ChatMessage {
     text: string;
     isAudio?: boolean;
     audioData?: string;
+}
+
+export interface PackageProduct {
+    productId: string;
+    productName: string;
+    quantity: number;
+    unitPrice?: number;
+}
+
+export interface SolarPackage {
+    id: string;
+    name: string;
+    description: string;
+    minBill: number;
+    maxBill: number;
+    systemPower: string; // Admin uses string input
+    totalPrice: number;
+    installationCost: number;
+    imageUrl: string;
+    savings: string | number; // Support text or number
+    paybackPeriod: string | number; // Support text or number
+    status: 'active' | 'inactive';
+    createdDate?: string;
+    panelCount?: number;
+    products?: PackageProduct[];
 }

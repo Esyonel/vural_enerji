@@ -1,0 +1,25 @@
+{
+    "nav": {
+        "products": "Prodotti",
+        "about": "Chi siamo",
+        "vision": "Visione e missione",
+        "blog": "Blog",
+        "career": "Carriera",
+        "contact": "Contatti",
+        "calculator": "Calcolatrice solare",
+        "login": "Accedi",
+        "profile": "Il mio profilo"
+    },
+    "hero": {
+        "status": "Futuro sostenibile",
+        "button": "Vedi progetti"
+    },
+    "common": {
+        "all": "Tutti",
+        "requestQuote": "Richiedi preventivo",
+        "outOfStock": "Esaurito",
+        "criticalStock": "Scorta limitata",
+        "inStock": "Disponibile",
+        "new": "Nuovo"
+    }
+}

@@ -46,7 +46,11 @@ export const Settings: React.FC = () => {
         <div className="max-w-4xl mx-auto flex flex-col gap-8">
             <div>
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Genel Ayarlar</h2>
-                <p className="text-slate-500 dark:text-slate-400 text-sm">Sistem konfigürasyonunu ve tercihlerini yönetin.</p>
+                <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <p>Sistem konfigürasyonunu ve tercihlerini yönetin.</p>
+                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                    <p>Sürüm: <span className="font-mono text-primary font-bold">v1.0.0</span></p>
+                </div>
             </div>
 
             {/* General Settings */}

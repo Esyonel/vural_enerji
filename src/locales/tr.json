@@ -1,0 +1,25 @@
+{
+    "nav": {
+        "products": "Ürünler",
+        "about": "Hakkımızda",
+        "vision": "Vizyon & Misyon",
+        "blog": "Blog",
+        "career": "Kariyer",
+        "contact": "Bize Ulaşın",
+        "calculator": "Solar Hesaplama",
+        "login": "Giriş Yap",
+        "profile": "Profilim"
+    },
+    "hero": {
+        "status": "Sürdürülebilir Gelecek",
+        "button": "Projelerimizi İncele"
+    },
+    "common": {
+        "all": "Tümü",
+        "requestQuote": "Fiyat Teklifi İste",
+        "outOfStock": "Stokta Yok",
+        "criticalStock": "Kritik Stok",
+        "inStock": "Stokta Var",
+        "new": "Yeni"
+    }
+}

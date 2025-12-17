@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useData } from '../../services/dataProvider';
 
 interface LoginProps {
     onLogin: () => void;
@@ -9,15 +10,30 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const { login } = useData();
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        
-        // Simple admin check
-        if ((email === 'admin' || email === 'admin@vuralenerji.com') && password === 'admin') {
-            onLogin();
-        } else {
-            setError('Kullanıcı adı veya şifre hatalı!');
+        setIsLoading(true);
+
+        try {
+            const result = await login(email, password);
+
+            if (result.success && result.user) {
+                if (result.user.role === 'admin') {
+                    onLogin();
+                } else {
+                    setError('Bu hesaba erişim yetkiniz yok (Admin değil).');
+                }
+            } else {
+                setError(result.message || 'Giriş başarısız.');
+            }
+        } catch (err) {
+            setError('Bir hata oluştu.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -32,9 +48,9 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 <div className="bg-[#2c2219] border border-[#493622] shadow-2xl rounded-2xl p-8 sm:p-10 flex flex-col gap-6">
                     <div className="flex flex-col items-center gap-4 text-center">
                         <div className="flex items-center justify-center p-2 mb-2 bg-white/5 rounded-2xl">
-                             <img 
-                                src="https://r2.erweima.ai/imgcatcher/6325988e-4b47-4950-932d-209e73b22292.png" 
-                                alt="Logo" 
+                            <img
+                                src="https://r2.erweima.ai/imgcatcher/6325988e-4b47-4950-932d-209e73b22292.png"
+                                alt="Logo"
                                 className="h-24 w-auto object-contain drop-shadow-lg"
                             />
                         </div>
@@ -51,10 +67,10 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                                 <span className="absolute left-4 text-[#cbad90]">
                                     <span className="material-symbols-outlined text-[20px]">person</span>
                                 </span>
-                                <input 
-                                    className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-login-accent/50 border border-[#684d31] bg-[#342618] focus:border-login-accent h-12 pl-11 pr-4 placeholder:text-[#cbad90]/60 text-base font-normal leading-normal transition-all" 
-                                    id="username" 
-                                    placeholder="admin" 
+                                <input
+                                    className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-login-accent/50 border border-[#684d31] bg-[#342618] focus:border-login-accent h-12 pl-11 pr-4 placeholder:text-[#cbad90]/60 text-base font-normal leading-normal transition-all"
+                                    id="username"
+                                    placeholder="admin"
                                     type="text"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -67,39 +83,43 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                                 <span className="absolute left-4 text-[#cbad90]">
                                     <span className="material-symbols-outlined text-[20px]">lock</span>
                                 </span>
-                                <input 
-                                    className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-login-accent/50 border border-[#684d31] bg-[#342618] focus:border-login-accent h-12 pl-11 pr-12 placeholder:text-[#cbad90]/60 text-base font-normal leading-normal transition-all" 
-                                    id="password" 
-                                    placeholder="******" 
+                                <input
+                                    className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-login-accent/50 border border-[#684d31] bg-[#342618] focus:border-login-accent h-12 pl-11 pr-12 placeholder:text-[#cbad90]/60 text-base font-normal leading-normal transition-all"
+                                    id="password"
+                                    placeholder="******"
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
                             </div>
                         </div>
-                        
+
                         {error && (
-                             <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm text-center font-bold">
+                            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm text-center font-bold">
                                 {error}
-                             </div>
+                            </div>
                         )}
 
                         <div className="flex items-center justify-between mt-1">
                             <label className="inline-flex items-center cursor-pointer">
-                                <input className="form-checkbox size-4 rounded border-[#684d31] text-login-accent focus:ring-login-accent bg-[#342618] cursor-pointer transition-colors" type="checkbox"/>
+                                <input className="form-checkbox size-4 rounded border-[#684d31] text-login-accent focus:ring-login-accent bg-[#342618] cursor-pointer transition-colors" type="checkbox" />
                                 <span className="ml-2 text-sm text-[#cbad90]">Beni hatırla</span>
                             </label>
                         </div>
 
-                        <button type="submit" className="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-5 bg-login-accent text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-opacity-90 active:scale-[0.98] transition-all duration-200 mt-2 shadow-lg shadow-login-accent/20">
-                            <span className="truncate">Giriş Yap</span>
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-5 bg-login-accent text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-opacity-90 active:scale-[0.98] transition-all duration-200 mt-2 shadow-lg shadow-login-accent/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                        >
+                            <span className="truncate">{isLoading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}</span>
                         </button>
                     </form>
-                    
+
                     <div className="mt-8 text-center">
                         <p className="text-xs text-[#cbad90]/60">
                             © 2024 Vural Enerji. Tüm hakları saklıdır.
-                            <br/>
+                            <br />
                             <span className="opacity-70">Güvenli Yönetim Paneli V.1.0</span>
                         </p>
                     </div>

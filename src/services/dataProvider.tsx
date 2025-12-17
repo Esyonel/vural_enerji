@@ -85,70 +85,82 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [isLoading, setIsLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState<Customer | null>(null);
 
-    // Simulate Supabase fetch on mount
+    // Load Data from API
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchApiData = async () => {
             setIsLoading(true);
-            // Simulate network delay
-            await new Promise(resolve => setTimeout(resolve, 800));
-            // Load Media Library
-            const savedMedia = localStorage.getItem('vural_media_library');
-            if (savedMedia) {
-                try {
-                    setMediaItems(JSON.parse(savedMedia));
-                } catch (e) {
-                    console.error("Error parsing saved media", e);
+            try {
+                // Fetch Products
+                const prodRes = await fetch('/api/products');
+                if (prodRes.ok) {
+                    const prodData = await prodRes.json();
+                    setProducts(prodData);
                 }
-            }
 
-            // Load Open Positions
-            const savedPositions = localStorage.getItem('vural_open_positions');
-            if (savedPositions) {
-                try {
-                    setOpenPositions(JSON.parse(savedPositions));
-                } catch (e) { console.error(e); }
-            }
-
-            // Load Contact Messages
-            const savedMessages = localStorage.getItem('vural_contact_messages');
-            if (savedMessages) {
-                try {
-                    setContactMessages(JSON.parse(savedMessages));
-                } catch (e) { console.error(e); }
-            }
-
-            // Load Products with Persistence
-            const savedProducts = localStorage.getItem('vural_products');
-            if (savedProducts) {
-                try {
-                    setProducts(JSON.parse(savedProducts));
-                } catch (e) {
-                    console.error("Error parsing saved products", e);
-                    setProducts(initialProducts);
+                // Fetch Categories
+                const catRes = await fetch('/api/categories');
+                if (catRes.ok) {
+                    const catData = await catRes.json();
+                    setCategories(catData.length > 0 ? catData : initialCategories);
+                } else {
+                    setCategories(initialCategories);
                 }
-            } else {
-                setProducts(initialProducts);
-            }
 
-            setCategories(initialCategories);
-            setOrders(initialOrders);
-            setCustomers(initialCustomers);
-            setProjects(initialProjects);
-            setQuotes(initialQuotes);
-            setBlogPosts(initialBlogPosts);
-            setJobApplications(initialJobApplications);
-
-            // Load Site Content with Persistence
-            const savedContent = localStorage.getItem('vural_site_content');
-            if (savedContent) {
-                try {
-                    setSiteContent({ ...initialSiteContent, ...JSON.parse(savedContent) });
-                } catch (e) {
-                    console.error("Error parsing saved site content", e);
+                // Fetch Site Content
+                const contentRes = await fetch('/api/content');
+                if (contentRes.ok) {
+                    const contentData = await contentRes.json();
+                    setSiteContent({ ...initialSiteContent, ...contentData });
+                } else {
                     setSiteContent(initialSiteContent);
                 }
-            } else {
+
+                // Fetch Jobs
+                const jobsRes = await fetch('/api/jobs');
+                if (jobsRes.ok) setOpenPositions(await jobsRes.json());
+
+                // Fetch Applications
+                const appsRes = await fetch('/api/applications');
+                if (appsRes.ok) setJobApplications(await appsRes.json());
+
+                // Fetch Messages
+                const msgRes = await fetch('/api/messages');
+                if (msgRes.ok) setContactMessages(await msgRes.json());
+
+                // Fetch Blog
+                const blogRes = await fetch('/api/blog');
+                if (blogRes.ok) setBlogPosts(await blogRes.json());
+
+                // Fetch Media
+                const mediaRes = await fetch('/api/media');
+                if (mediaRes.ok) setMediaItems(await mediaRes.json());
+
+                // Fetch Projects
+                const projRes = await fetch('/api/projects');
+                if (projRes.ok) setProjects(await projRes.json());
+
+                // Fetch Quotes
+                const quoteRes = await fetch('/api/quotes');
+                if (quoteRes.ok) setQuotes(await quoteRes.json());
+
+                // Fetch Customers
+                const customersRes = await fetch('/api/customers');
+                if (customersRes.ok) setCustomers(await customersRes.json());
+
+                // Temporary fallback for unimplemented endpoints/ mocks
+                setOrders(initialOrders);
+            } catch (error) {
+                console.error("API connection failed, falling back to mock data", error);
+                setProducts(initialProducts);
+                setCategories(initialCategories);
                 setSiteContent(initialSiteContent);
+                // Fallbacks
+                setOrders(initialOrders);
+                setCustomers(initialCustomers);
+                setProjects(initialProjects);
+                setQuotes(initialQuotes);
+                setBlogPosts(initialBlogPosts);
+                setJobApplications(initialJobApplications);
             }
 
             // Check for session (mock)
@@ -159,61 +171,49 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             setIsLoading(false);
         };
-        fetchData();
+        fetchApiData();
     }, []);
 
     // Auth Methods
     const login = async (email: string, password: string) => {
-        // Mock authentication
-        await new Promise(resolve => setTimeout(resolve, 500));
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
 
-        // Special check for simple admin login as requested: admin / admin
-        if (email === 'admin' && password === 'admin') {
-            const adminUser: Customer = {
-                id: 'admin-id',
-                name: 'Vural Admin',
-                email: 'admin@vuralenerji.com',
-                role: 'admin',
-                status: 'active',
-                joinDate: '2023-01-01',
-                avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin'
-            };
-            setCurrentUser(adminUser);
-            localStorage.setItem('vural_user', JSON.stringify(adminUser));
-            return { success: true, user: adminUser };
+            if (data.success && data.user) {
+                setCurrentUser(data.user);
+                localStorage.setItem('vural_user', JSON.stringify(data.user));
+                return { success: true, user: data.user };
+            }
+            return { success: false, message: data.message || 'Giriş başarısız.' };
+        } catch (e) {
+            console.error("Login Error", e);
+            return { success: false, message: 'Sunucu hatası.' };
         }
-
-        const user = customers.find(c => c.email === email && c.password === password);
-
-        if (user) {
-            setCurrentUser(user);
-            localStorage.setItem('vural_user', JSON.stringify(user));
-            return { success: true, user };
-        }
-        return { success: false, message: 'E-posta/Kullanıcı adı veya şifre hatalı.' };
     };
 
     const register = async (name: string, email: string, password: string) => {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const existing = customers.find(c => c.email === email);
-        if (existing) return { success: false, message: 'Bu e-posta adresi zaten kayıtlı.' };
+        try {
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password })
+            });
+            const data = await res.json();
 
-        const newUser: Customer = {
-            id: Math.random().toString(36).substr(2, 9),
-            name,
-            email,
-            password,
-            role: 'user',
-            status: 'active',
-            joinDate: new Date().toLocaleDateString('tr-TR'),
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`
-        };
-
-        setCustomers(prev => [...prev, newUser]);
-        // Auto login after register
-        setCurrentUser(newUser);
-        localStorage.setItem('vural_user', JSON.stringify(newUser));
-        return { success: true };
+            if (data.success) {
+                // Auto login after register
+                return login(email, password);
+            }
+            return { success: false, message: data.message || 'Kayıt başarısız.' };
+        } catch (e) {
+            console.error("Register Error", e);
+            return { success: false, message: 'Sunucu hatası.' };
+        }
     };
 
     const logout = () => {
@@ -222,11 +222,23 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const updateSiteContent = async (newContent: Partial<SiteContent>) => {
-        setSiteContent(prev => {
-            const updated = { ...prev, ...newContent };
-            localStorage.setItem('vural_site_content', JSON.stringify(updated));
-            return updated;
-        });
+        try {
+            const updated = { ...siteContent, ...newContent };
+            const res = await fetch('/api/content', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updated)
+            });
+
+            if (res.ok) {
+                setSiteContent(updated);
+                localStorage.setItem('vural_site_content', JSON.stringify(updated));
+            } else {
+                console.error('Failed to update site content');
+            }
+        } catch (e) {
+            console.error('Error updating site content:', e);
+        }
     };
 
     // Helper to calculate stock status
@@ -237,21 +249,30 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const addProduct = async (product: Omit<Product, 'id'>) => {
-        const newProduct: Product = {
+        const newProduct = {
             ...product,
-            id: Math.random().toString(36).substr(2, 9),
             stockStatus: calculateStockStatus(product.stock)
         };
-        const newProducts = [newProduct, ...products];
-        setProducts(newProducts);
-        localStorage.setItem('vural_products', JSON.stringify(newProducts));
+
+        try {
+            const res = await fetch('/api/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newProduct)
+            });
+            if (res.ok) {
+                const savedProduct = await res.json();
+                setProducts(prev => [savedProduct, ...prev]);
+            }
+        } catch (e) {
+            console.error("Add product failed", e);
+        }
     };
 
     const updateProduct = async (id: string, updates: Partial<Product>) => {
         const updatedProducts = products.map(p => {
             if (p.id === id) {
                 const updatedProduct = { ...p, ...updates };
-                // Recalculate stock status if stock changed
                 if (updates.stock !== undefined) {
                     updatedProduct.stockStatus = calculateStockStatus(updatedProduct.stock);
                 }
@@ -278,7 +299,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const oldCategory = categories.find(c => c.id === id);
         setCategories(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
 
-        // If slug changed, update associated products
         if (oldCategory && updates.slug && oldCategory.slug !== updates.slug) {
             setProducts(prev => prev.map(p =>
                 p.category === oldCategory.slug ? { ...p, category: updates.slug! } : p
@@ -291,14 +311,31 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const addCustomer = async (customer: Omit<Customer, 'id' | 'joinDate' | 'status'>) => {
-        const newCustomer: Customer = {
-            ...customer,
-            id: Math.random().toString(36).substr(2, 9),
-            joinDate: new Date().toISOString().split('T')[0],
-            status: 'active',
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${customer.name}`
-        };
-        setCustomers(prev => [newCustomer, ...prev]);
+        try {
+            const res = await fetch('/api/customers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(customer)
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                const newCustomer: Customer = {
+                    ...customer,
+                    id: data.id,
+                    joinDate: new Date().toISOString().split('T')[0],
+                    status: 'active',
+                    role: customer.role || 'user',
+                    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${customer.name}`
+                };
+                setCustomers(prev => [newCustomer, ...prev]);
+            } else {
+                console.error("Failed to add customer:", data.message);
+                alert(data.message || 'Kullanıcı eklenemedi.');
+            }
+        } catch (e) {
+            console.error("API call failed for addCustomer", e);
+        }
     };
 
     const deleteCustomer = async (id: string) => {
@@ -308,7 +345,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updateCustomer = async (id: string, updates: Partial<Customer>) => {
         setCustomers(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
 
-        // If updating current user (self), update session
         if (currentUser && currentUser.id === id) {
             const updatedUser = { ...currentUser, ...updates };
             setCurrentUser(updatedUser);
@@ -317,187 +353,284 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const addProject = async (project: Omit<Project, 'id'>) => {
-        const newProject = { ...project, id: Math.random().toString(36).substr(2, 9) };
-        setProjects(prev => [newProject, ...prev]);
+        try {
+            const res = await fetch('http://localhost:3001/api/projects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(project)
+            });
+            if (res.ok) {
+                const { id } = await res.json();
+                setProjects(prev => [{ ...project, id }, ...prev]);
+            }
+        } catch (e) { console.error("Failed to add project", e); }
     };
 
     const deleteProject = async (id: string) => {
-        setProjects(prev => prev.filter(p => p.id !== id));
+        try {
+            await fetch(`http://localhost:3001/api/projects/${id}`, { method: 'DELETE' });
+            setProjects(prev => prev.filter(p => p.id !== id));
+        } catch (e) { console.error("Failed to delete project", e); }
     };
 
     const updateProject = async (id: string, updates: Partial<Project>) => {
-        setProjects(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+        try {
+            await fetch(`http://localhost:3001/api/projects/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            });
+            setProjects(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+        } catch (e) { console.error("Failed to update project", e); }
     };
 
     const addQuote = async (quote: Omit<QuoteRequest, 'id' | 'date' | 'status'>) => {
-        const newQuote: QuoteRequest = {
-            ...quote,
-            id: 'qt-' + Math.random().toString(36).substr(2, 6),
-            date: new Date().toISOString().split('T')[0],
-            status: 'new'
-        };
-        setQuotes(prev => [newQuote, ...prev]);
+        try {
+            const res = await fetch('http://localhost:3001/api/quotes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(quote)
+            });
+            if (res.ok) {
+                const { id } = await res.json();
+                const newQuote: QuoteRequest = {
+                    ...quote,
+                    id,
+                    date: new Date().toISOString().split('T')[0],
+                    status: 'new'
+                };
+                setQuotes(prev => [newQuote, ...prev]);
+            }
+        } catch (e) { console.error("Failed to add quote", e); }
     };
 
     const updateQuoteStatus = async (id: string, status: QuoteRequest['status']) => {
-        setQuotes(prev => prev.map(q => q.id === id ? { ...q, status } : q));
+        try {
+            await fetch(`http://localhost:3001/api/quotes/${id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            setQuotes(prev => prev.map(q => q.id === id ? { ...q, status } : q));
+        } catch (e) { console.error("Failed to update quote status", e); }
     };
 
     const deleteQuote = async (id: string) => {
-        setQuotes(prev => prev.filter(q => q.id !== id));
+        try {
+            await fetch(`http://localhost:3001/api/quotes/${id}`, { method: 'DELETE' });
+            setQuotes(prev => prev.filter(q => q.id !== id));
+        } catch (e) { console.error("Failed to delete quote", e); }
     };
 
     // Blog Methods
     const addBlogPost = async (post: Omit<BlogPost, 'id' | 'date' | 'slug' | 'likes' | 'comments'>) => {
-        const slug = post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-        const newPost: BlogPost = {
-            ...post,
-            id: Math.random().toString(36).substr(2, 9),
-            date: new Date().toLocaleDateString('tr-TR'),
-            slug,
-            likes: 0,
-            comments: []
-        };
-        setBlogPosts(prev => [newPost, ...prev]);
+        try {
+            const res = await fetch('http://localhost:3001/api/blog', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(post)
+            });
+            if (res.ok) {
+                const { id, slug, date } = await res.json();
+                const newPost: BlogPost = { ...post, id, slug, date, likes: 0, comments: [] };
+                setBlogPosts(prev => [newPost, ...prev]);
+            }
+        } catch (e) { console.error("Failed to add blog post", e); }
     };
 
     const updateBlogPost = async (id: string, updates: Partial<BlogPost>) => {
-        setBlogPosts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+        try {
+            await fetch(`http://localhost:3001/api/blog/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            });
+            setBlogPosts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+        } catch (e) { console.error("Failed to update blog post", e); }
     };
 
     const deleteBlogPost = async (id: string) => {
-        setBlogPosts(prev => prev.filter(p => p.id !== id));
+        try {
+            await fetch(`http://localhost:3001/api/blog/${id}`, { method: 'DELETE' });
+            setBlogPosts(prev => prev.filter(p => p.id !== id));
+        } catch (e) { console.error("Failed to delete blog post", e); }
     };
 
     const addComment = async (postId: string, content: string) => {
         if (!currentUser) return;
-        const newComment: Comment = {
-            id: 'c' + Math.random().toString(36).substr(2, 9),
-            postId,
-            userId: currentUser.id,
-            userName: currentUser.name,
-            userAvatar: currentUser.avatar,
-            content,
-            date: new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }),
-            status: 'approved' // Auto approve for demo
-        };
-
-        setBlogPosts(prev => prev.map(p => {
-            if (p.id === postId) {
-                return { ...p, comments: [...(p.comments || []), newComment] };
+        try {
+            const res = await fetch(`http://localhost:3001/api/blog/${postId}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: currentUser.id,
+                    userName: currentUser.name,
+                    userAvatar: currentUser.avatar,
+                    content
+                })
+            });
+            if (res.ok) {
+                const { id, date } = await res.json();
+                const newComment: Comment = {
+                    id, postId, userId: currentUser.id, userName: currentUser.name,
+                    userAvatar: currentUser.avatar, content, date, status: 'approved'
+                };
+                setBlogPosts(prev => prev.map(p => {
+                    if (p.id === postId) return { ...p, comments: [...(p.comments || []), newComment] };
+                    return p;
+                }));
             }
-            return p;
-        }));
+        } catch (e) { console.error("Failed to add comment", e); }
     };
 
     const deleteComment = async (postId: string, commentId: string) => {
-        setBlogPosts(prev => prev.map(p => {
-            if (p.id === postId) {
-                return { ...p, comments: (p.comments || []).filter(c => c.id !== commentId) };
-            }
-            return p;
-        }));
+        try {
+            await fetch(`http://localhost:3001/api/blog/${postId}/comments/${commentId}`, { method: 'DELETE' });
+            setBlogPosts(prev => prev.map(p => {
+                if (p.id === postId) return { ...p, comments: (p.comments || []).filter(c => c.id !== commentId) };
+                return p;
+            }));
+        } catch (e) { console.error("Failed to delete comment", e); }
     };
 
     const toggleLike = async (postId: string) => {
-        setBlogPosts(prev => prev.map(p => {
-            if (p.id === postId) {
-                // Toggle logic simulation (just increment for now as we don't track user likes in mock DB)
-                return { ...p, likes: p.likes + 1 };
-            }
-            return p;
-        }));
+        try {
+            await fetch(`http://localhost:3001/api/blog/${postId}/like`, { method: 'POST' });
+            setBlogPosts(prev => prev.map(p => {
+                if (p.id === postId) return { ...p, likes: p.likes + 1 };
+                return p;
+            }));
+        } catch (e) { console.error("Failed to like post", e); }
     };
 
     // Job Methods
     const addJobApplication = async (app: Omit<JobApplication, 'id' | 'date' | 'status'>) => {
-        const newApp: JobApplication = {
-            ...app,
-            id: 'job-' + Math.random().toString(36).substr(2, 6),
-            date: new Date().toISOString().split('T')[0],
-            status: 'new'
-        };
-        setJobApplications(prev => [newApp, ...prev]);
+        try {
+            const res = await fetch('http://localhost:3001/api/applications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(app)
+            });
+            if (res.ok) {
+                const { id } = await res.json();
+                const newApp: JobApplication = {
+                    ...app,
+                    id,
+                    date: new Date().toISOString().split('T')[0],
+                    status: 'new'
+                };
+                setJobApplications(prev => [newApp, ...prev]);
+            }
+        } catch (e) { console.error("Failed to add job application", e); }
     };
 
     const updateJobStatus = async (id: string, status: JobApplication['status']) => {
-        setJobApplications(prev => prev.map(j => j.id === id ? { ...j, status } : j));
+        try {
+            await fetch(`http://localhost:3001/api/applications/${id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            setJobApplications(prev => prev.map(j => j.id === id ? { ...j, status } : j));
+        } catch (e) { console.error("Failed to update job status", e); }
     };
 
     // Media Methods
     const addMediaItem = async (item: Omit<MediaItem, 'id' | 'date'>) => {
-        const newItem: MediaItem = {
-            ...item,
-            id: 'media-' + Math.random().toString(36).substr(2, 9),
-            date: new Date().toISOString()
-        };
-        const newItems = [newItem, ...mediaItems];
-        setMediaItems(newItems);
-        // Persist to localStorage (heavy but needed for demo)
         try {
-            localStorage.setItem('vural_media_library', JSON.stringify(newItems));
+            const res = await fetch('http://localhost:3001/api/media', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(item)
+            });
+            if (res.ok) {
+                const { id, date } = await res.json();
+                const newItem: MediaItem = { ...item, id, date };
+                setMediaItems(prev => [newItem, ...prev]);
+            }
         } catch (e) {
-            console.error("Storage limit exceeded", e);
-            alert("Depolama alanı doldu! Daha fazla resim yükleyemezsiniz.");
-            // Revert state
-            setMediaItems(mediaItems);
+            console.error("Failed to add media item", e);
+            alert("Resim yüklenemedi!");
         }
     };
 
     // Contact Messages Methods
     const addContactMessage = async (msg: Omit<ContactMessage, 'id' | 'date' | 'status'>) => {
-        const newMsg: ContactMessage = {
-            ...msg,
-            id: 'msg-' + Math.random().toString(36).substr(2, 9),
-            date: new Date().toISOString(),
-            status: 'new'
-        };
-        const newMessages = [newMsg, ...contactMessages];
-        setContactMessages(newMessages);
-        localStorage.setItem('vural_contact_messages', JSON.stringify(newMessages));
+        try {
+            const res = await fetch('http://localhost:3001/api/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(msg)
+            });
+            if (res.ok) {
+                const { id } = await res.json();
+                const newMsg: ContactMessage = {
+                    ...msg,
+                    id,
+                    date: new Date().toISOString(),
+                    status: 'new'
+                };
+                setContactMessages(prev => [newMsg, ...prev]);
+            }
+        } catch (e) { console.error("Failed to add contact message", e); }
     };
 
     const deleteContactMessage = async (id: string) => {
-        const newMessages = contactMessages.filter(m => m.id !== id);
-        setContactMessages(newMessages);
-        localStorage.setItem('vural_contact_messages', JSON.stringify(newMessages));
+        try {
+            await fetch(`http://localhost:3001/api/messages/${id}`, { method: 'DELETE' });
+            setContactMessages(prev => prev.filter(m => m.id !== id));
+        } catch (e) { console.error("Failed to delete contact message", e); }
     };
 
     const updateContactMessageStatus = async (id: string, status: ContactMessage['status']) => {
-        const newMessages = contactMessages.map(m => m.id === id ? { ...m, status } : m);
-        setContactMessages(newMessages);
-        localStorage.setItem('vural_contact_messages', JSON.stringify(newMessages));
+        try {
+            await fetch(`http://localhost:3001/api/messages/${id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            setContactMessages(prev => prev.map(m => m.id === id ? { ...m, status } : m));
+        } catch (e) { console.error("Failed to update contact message status", e); }
     };
 
     // Open Positions Methods
     const addJobPosition = async (pos: Omit<JobPosition, 'id' | 'date' | 'isActive'>) => {
-        const newPos: JobPosition = {
-            ...pos,
-            id: 'pos-' + Math.random().toString(36).substr(2, 9),
-            date: new Date().toISOString().split('T')[0],
-            isActive: true
-        };
-        const newPositions = [newPos, ...openPositions];
-        setOpenPositions(newPositions);
-        localStorage.setItem('vural_open_positions', JSON.stringify(newPositions));
+        try {
+            const res = await fetch('http://localhost:3001/api/jobs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(pos)
+            });
+            if (res.ok) {
+                const newPos = await res.json();
+                setOpenPositions(prev => [newPos, ...prev]);
+            }
+        } catch (e) { console.error("Failed to add job position", e); }
     };
 
     const updateJobPosition = async (id: string, updates: Partial<JobPosition>) => {
-        const newPositions = openPositions.map(p => p.id === id ? { ...p, ...updates } : p);
-        setOpenPositions(newPositions);
-        localStorage.setItem('vural_open_positions', JSON.stringify(newPositions));
+        try {
+            await fetch(`http://localhost:3001/api/jobs/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            });
+            setOpenPositions(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+        } catch (e) { console.error("Failed to update job position", e); }
     };
 
     const deleteJobPosition = async (id: string) => {
-        const newPositions = openPositions.filter(p => p.id !== id);
-        setOpenPositions(newPositions);
-        localStorage.setItem('vural_open_positions', JSON.stringify(newPositions));
+        try {
+            await fetch(`http://localhost:3001/api/jobs/${id}`, { method: 'DELETE' });
+            setOpenPositions(prev => prev.filter(p => p.id !== id));
+        } catch (e) { console.error("Failed to delete job position", e); }
     };
 
     const deleteMediaItem = async (id: string) => {
-        const newItems = mediaItems.filter(m => m.id !== id);
-        setMediaItems(newItems);
-        localStorage.setItem('vural_media_library', JSON.stringify(newItems));
+        try {
+            await fetch(`http://localhost:3001/api/media/${id}`, { method: 'DELETE' });
+            setMediaItems(prev => prev.filter(m => m.id !== id));
+        } catch (e) { console.error("Failed to delete media item", e); }
     };
 
     return (

@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useData } from '../../services/dataProvider';
 import { Product } from '../../types';
-import { ProductCard } from './Home'; // We will export this from Home.tsx
-import { QuoteRequestModal } from './Home';
+import { ProductCard } from './Home';
+import { QuoteRequestModal } from './QuoteRequestModal';
 import { SEO } from '../SEO';
 
 export const ProductDetailPage: React.FC = () => {

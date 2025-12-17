@@ -82,19 +82,33 @@ export const initialProjects: Project[] = [
         id: '1',
         title: 'Akdeniz Meyve Fabrikası',
         location: 'Antalya',
+        coordinates: { lat: 36.8969, lng: 30.7133 },
         capacity: '2.5 MW',
         date: '2023',
         imageUrl: 'https://images.unsplash.com/photo-1566093097221-ac56396c48e0?q=80&w=2070&auto=format&fit=crop',
-        description: 'Endüstriyel çatı üzeri güneş enerjisi santrali projesi ile tesisin enerji ihtiyacının %85\'i karşılanmaktadır.'
+        description: 'Endüstriyel çatı üzeri güneş enerjisi santrali projesi ile tesisin enerji ihtiyacının %85\'i karşılanmaktadır.',
+        stats: {
+            power: '2.5 MW',
+            panels: '5500 Adet',
+            area: '12.000 m²',
+            co2: '1500 Ton/Yıl'
+        }
     },
     {
         id: '2',
         title: 'Yeşil Vadi Konutları',
         location: 'İzmir',
+        coordinates: { lat: 38.4237, lng: 27.1428 },
         capacity: '450 kW',
         date: '2024',
         imageUrl: 'https://images.unsplash.com/photo-1625305266405-b772c7221652?q=80&w=2070&auto=format&fit=crop',
-        description: 'Site ortak alan aydınlatmaları ve havuz sistemleri için hibrit sistem kurulumu.'
+        description: 'Site ortak alan aydınlatmaları ve havuz sistemleri için hibrit sistem kurulumu.',
+        stats: {
+            power: '450 kW',
+            panels: '1000 Adet',
+            area: '2.500 m²',
+            co2: '300 Ton/Yıl'
+        }
     }
 ];
 
@@ -230,7 +244,8 @@ export const initialSiteContent: SiteContent = {
     socialLinks: [
         { platform: 'facebook', url: '#', icon: 'public' },
         { platform: 'twitter', url: '#', icon: 'alternate_email' },
-        { platform: 'instagram', url: '#', icon: 'photo_camera' },
-        { platform: 'linkedin', url: '#', icon: 'share' }
+        { platform: 'instagram', url: 'https://instagram.com', icon: 'photo_camera' },
+        { platform: 'linkedin', url: 'https://linkedin.com', icon: 'share' },
+        { platform: 'whatsapp', url: 'https://wa.me/905555555555', icon: 'chat' }
     ]
 };

@@ -2,6 +2,7 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { DataProvider, useData } from './services/dataProvider';
+import { ThemeProvider } from './context/ThemeContext';
 import { PublicLayout } from './components/Public/Layout';
 import { Home } from './components/Public/Home';
 import { ProjectsPage } from './components/Public/ProjectsPage';
@@ -12,6 +13,7 @@ import { ContactPage } from './components/Public/ContactPage';
 import { BlogPage } from './components/Public/BlogPage';
 import { NewsDetailPage } from './components/Public/NewsDetailPage';
 import { ProductDetailPage } from './components/Public/ProductDetailPage';
+import SolarPackageDetail from './components/Public/SolarPackageDetail';
 import { AuthPage } from './components/Auth/AuthPage';
 import { UserProfile } from './components/User/UserProfile';
 import { AdminLayout } from './components/Admin/Layout';
@@ -29,6 +31,7 @@ import { MediaLibrary } from './components/Admin/MediaLibrary';
 import { Admins } from './components/Admin/Admins';
 import { ContactMessages } from './components/Admin/ContactMessages';
 import { Users } from './components/Admin/Users';
+import { SolarPackages } from './components/Admin/SolarPackages';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode, adminOnly?: boolean }> = ({ children, adminOnly }) => {
@@ -50,45 +53,49 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode, adminOnly?: boolean 
 const App: React.FC = () => {
     return (
         <DataProvider>
-            <Router>
-                <Routes>
-                    {/* Public Routes Wrapped in Layout */}
-                    <Route element={<PublicLayout />}>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/product/:id" element={<ProductDetailPage />} />
-                        <Route path="/projects" element={<ProjectsPage />} />
-                        <Route path="/about" element={<AboutPage />} />
-                        <Route path="/vision-mission" element={<VisionMissionPage />} />
-                        <Route path="/career" element={<CareerPage />} />
-                        <Route path="/contact" element={<ContactPage />} />
-                        <Route path="/blog" element={<BlogPage />} />
-                        <Route path="/blog/:id" element={<NewsDetailPage />} />
-                        <Route path="/news/:id" element={<NewsDetailPage />} />
-                        <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-                    </Route>
+            <ThemeProvider>
+                <Router>
+                    <Routes>
+                        {/* Public Routes Wrapped in Layout */}
+                        <Route element={<PublicLayout />}>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/product/:id" element={<ProductDetailPage />} />
+                            <Route path="/projects" element={<ProjectsPage />} />
+                            <Route path="/about" element={<AboutPage />} />
+                            <Route path="/vision-mission" element={<VisionMissionPage />} />
+                            <Route path="/career" element={<CareerPage />} />
+                            <Route path="/contact" element={<ContactPage />} />
+                            <Route path="/blog" element={<BlogPage />} />
+                            <Route path="/blog/:id" element={<NewsDetailPage />} />
+                            <Route path="/news/:id" element={<NewsDetailPage />} />
+                            <Route path="/solar-package/:id" element={<SolarPackageDetail />} />
+                            <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+                        </Route>
 
-                    {/* Auth */}
-                    <Route path="/login" element={<AuthPage />} />
+                        {/* Auth */}
+                        <Route path="/login" element={<AuthPage />} />
 
-                    {/* Admin Protected Routes */}
-                    <Route path="/admin" element={<ProtectedRoute adminOnly><AdminLayout /></ProtectedRoute>}>
-                        <Route index element={<Dashboard />} />
-                        <Route path="quotes" element={<Quotes />} />
-                        <Route path="products" element={<Products />} />
-                        <Route path="categories" element={<Categories />} />
-                        <Route path="projects" element={<ProjectsAdmin />} />
-                        <Route path="content" element={<ContentEditor />} />
-                        <Route path="career" element={<CareerAdmin />} />
-                        <Route path="contact-messages" element={<ContactMessages />} />
-                        <Route path="blog" element={<BlogAdmin />} />
-                        <Route path="media" element={<MediaLibrary />} />
-                        <Route path="customers" element={<Customers />} />
-                        <Route path="admins" element={<Admins />} />
-                        <Route path="users" element={<Users />} />
-                        <Route path="settings" element={<Settings />} />
-                    </Route>
-                </Routes>
-            </Router>
+                        {/* Admin Protected Routes */}
+                        <Route path="/admin" element={<ProtectedRoute adminOnly><AdminLayout /></ProtectedRoute>}>
+                            <Route index element={<Dashboard />} />
+                            <Route path="quotes" element={<Quotes />} />
+                            <Route path="products" element={<Products />} />
+                            <Route path="categories" element={<Categories />} />
+                            <Route path="projects" element={<ProjectsAdmin />} />
+                            <Route path="content" element={<ContentEditor />} />
+                            <Route path="career" element={<CareerAdmin />} />
+                            <Route path="contact-messages" element={<ContactMessages />} />
+                            <Route path="blog" element={<BlogAdmin />} />
+                            <Route path="solar-packages" element={<SolarPackages />} />
+                            <Route path="media" element={<MediaLibrary />} />
+                            <Route path="customers" element={<Customers />} />
+                            <Route path="admins" element={<Admins />} />
+                            <Route path="users" element={<Users />} />
+                            <Route path="settings" element={<Settings />} />
+                        </Route>
+                    </Routes>
+                </Router>
+            </ThemeProvider>
         </DataProvider>
     );
 };

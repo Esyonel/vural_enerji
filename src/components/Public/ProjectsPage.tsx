@@ -57,13 +57,7 @@ export const ProjectsPage: React.FC = () => {
                 </div>
             </div>
 
-            <footer className="bg-white dark:bg-[#0c180e] border-t border-gray-200 dark:border-white/5 pt-16 pb-8 mt-20 rounded-3xl">
-                <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center">
-                        <p className="text-sm text-gray-500">© 2024 Vural Enerji. Tüm hakları saklıdır.</p>
-                    </div>
-                </div>
-            </footer>
+
         </div>
     );
 };

@@ -1,0 +1,57 @@
+@import "tailwindcss";
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+    /* Colors */
+    --color-primary: #13ec37;
+    --color-primary-dark: #0abf53;
+    --color-accent: #ff8800;
+    --color-login-accent: #f27f0d;
+
+    --color-background-light: #f5f8f7;
+    --color-background-dark: #102217;
+    --color-surface-light: #ffffff;
+    --color-surface-dark: #1a2e22;
+
+    /* Fonts */
+    --font-display: "Space Grotesk", sans-serif;
+    --font-body: "Inter", "Noto Sans", sans-serif;
+    --font-sans: "Inter", "Noto Sans", sans-serif;
+}
+
+/* Custom Utilities if needed, though Tailwind handles most */
+.glass-card {
+    background: rgba(255, 255, 255, 0.90);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.dark .glass-card {
+    background: rgba(16, 34, 19, 0.8);
+}
+
+/* Hide scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+}
