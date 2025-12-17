@@ -7,7 +7,8 @@ export const WhatsAppButton: React.FC = () => {
     let whatsappLink = siteContent.socialLinks?.find(s => s.platform === 'whatsapp');
 
     // Fallback if link is missing OR url is empty/invalid
-    if (!whatsappLink || !whatsappLink.url) {
+    // Fallback if link is missing OR url is empty/invalid (including whitespace)
+    if (!whatsappLink || !whatsappLink.url || whatsappLink.url.trim() === '') {
         const fallbackLink = initialSiteContent.socialLinks?.find(s => s.platform === 'whatsapp');
         if (fallbackLink && fallbackLink.url) {
             whatsappLink = fallbackLink;
