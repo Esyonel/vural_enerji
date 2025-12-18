@@ -521,9 +521,28 @@ app.delete('/api/quotes/:id', (req, res) => {
 // --- NEWSLETTER ROUTE ---
 app.post('/api/newsletter', (req, res) => {
     const { email } = req.body;
-    // simulating database insert
-    console.log(`New newsletter subscription: ${email}`);
-    res.json({ success: true, message: 'Bültenimize başarıyla abone oldunuz.' });
+
+    if (!validateEmail(email)) {
+        return res.status(400).json({ success: false, message: 'Geçersiz e-posta adresi.' });
+    }
+
+    const id = 'nl-' + Math.random().toString(36).substr(2, 9);
+    const subscribedDate = new Date().toISOString();
+
+    // Check if already subscribed
+    db.get("SELECT * FROM newsletter_subscribers WHERE email = ?", [email], (err, row) => {
+        if (err) return res.status(500).json({ success: false, message: 'Sunucu hatası.' });
+        if (row) return res.json({ success: false, message: 'Bu e-posta adresi zaten kayıtlı.' });
+
+        db.run(`INSERT INTO newsletter_subscribers (id, email, subscribedDate, status) VALUES (?, ?, ?, ?)`,
+            [id, email, subscribedDate, 'active'],
+            function (err) {
+                if (err) return res.status(500).json({ success: false, message: 'Sunucu hatası.' });
+                console.log(`New newsletter subscription: ${email}`);
+                res.json({ success: true, message: 'Bültenimize başarıyla abone oldunuz!' });
+            }
+        );
+    });
 });
 
 // --- SOLAR PACKAGES ROUTES ---

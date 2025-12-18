@@ -1,45 +1,53 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../../services/dataProvider';
 import { initialSiteContent } from '../../services/mockData';
 
 export const WhatsAppButton: React.FC = () => {
-    const { siteContent } = useData();
+    const { siteContent, isLoading } = useData();
+    const [isVisible, setIsVisible] = useState(false);
 
-    // 1. Try to get from current siteContent
-    let whatsappLink = siteContent?.socialLinks?.find(s => s.platform === 'whatsapp');
+    // Use effect to control visibility after data loads
+    useEffect(() => {
+        // Show button after a short delay to ensure data is loaded
+        const timer = setTimeout(() => {
+            setIsVisible(true);
+        }, 100);
+        return () => clearTimeout(timer);
+    }, []);
 
-    // 2. Validate the link. If invalid, try fallback
-    const isValidUrl = (url?: string) => url && url.trim().length > 0;
+    // Always use fallback as primary source to ensure reliability
+    const fallbackLink = initialSiteContent.socialLinks?.find(s => s.platform === 'whatsapp');
+    let whatsappLink = siteContent?.socialLinks?.find(s => s.platform === 'whatsapp') || fallbackLink;
 
-    if (!whatsappLink || !isValidUrl(whatsappLink.url)) {
-        const fallbackLink = initialSiteContent.socialLinks?.find(s => s.platform === 'whatsapp');
-        if (fallbackLink && isValidUrl(fallbackLink.url)) {
-            whatsappLink = fallbackLink;
-        }
-    }
-
-    // 3. If still no link, use a hardcoded safety net (The user wants a definitive solution)
-    if (!whatsappLink || !isValidUrl(whatsappLink.url)) {
+    // Final safety net
+    if (!whatsappLink) {
         whatsappLink = {
             platform: 'whatsapp',
-            url: 'https://wa.me/905555555555', // Default hardcoded number
+            url: 'https://wa.me/905555555555',
             icon: 'chat'
         };
     }
 
-    let finalUrl = whatsappLink.url!;
+    const getSafeUrl = (url: any): string => {
+        if (!url) return 'https://wa.me/905555555555';
+        return String(url).trim();
+    };
+
+    let finalUrl = getSafeUrl(whatsappLink?.url);
 
     // Format phone numbers
     if (!finalUrl.startsWith('http')) {
-        // Remove all non-digit characters to check if it's just a phone number
         const cleanDigits = finalUrl.replace(/\D/g, '');
-        // If it looks like a phone number (e.g. has more than 5 digits), treat as wa.me
         if (cleanDigits.length > 5) {
             finalUrl = `https://wa.me/${cleanDigits}`;
         } else {
-            // Otherwise assume it's a link missing protocol
             finalUrl = `https://${finalUrl}`;
         }
+    }
+
+    // Don't render until visible flag is set
+    if (!isVisible) {
+        return null;
     }
 
     return (
@@ -50,6 +58,7 @@ export const WhatsAppButton: React.FC = () => {
             className="fixed bottom-24 right-6 z-[9999] bg-[#25D366] hover:bg-[#20bd5a] text-white p-4 rounded-full shadow-lg shadow-green-500/30 transition-all hover:scale-110 flex items-center justify-center group"
             aria-label="WhatsApp İle İletişime Geç"
             title="WhatsApp Hattı"
+            style={{ opacity: 1, visibility: 'visible' }}
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"

@@ -26,7 +26,7 @@ export const Footer: React.FC = () => {
         setStatus('loading');
 
         try {
-            const res = await fetch('http://localhost:3001/api/newsletter', {
+            const res = await fetch('/api/newsletter', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })
@@ -39,7 +39,7 @@ export const Footer: React.FC = () => {
                 setEmail('');
             } else {
                 setStatus('error');
-                setMessage('Bir hata oluştu.');
+                setMessage(data.message || 'Bir hata oluştu.');
             }
         } catch (error) {
             setStatus('error');
@@ -78,8 +78,8 @@ export const Footer: React.FC = () => {
                             type="submit"
                             disabled={status === 'loading' || status === 'success'}
                             className={`px-8 py-4 rounded-xl font-bold transition-all shadow-lg flex items-center justify-center gap-2 ${status === 'success'
-                                    ? 'bg-green-500 text-white cursor-default'
-                                    : 'bg-primary text-black hover:bg-[#0fd630] hover:-translate-y-1'
+                                ? 'bg-green-500 text-white cursor-default'
+                                : 'bg-primary text-black hover:bg-[#0fd630] hover:-translate-y-1'
                                 }`}
                         >
                             {status === 'loading' ? 'İşleniyor...' : status === 'success' ? 'Abone Olundu!' : 'Abone Ol'}

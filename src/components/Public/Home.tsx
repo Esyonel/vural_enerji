@@ -118,8 +118,8 @@ export const Home: React.FC = () => {
                             {siteContent.heroSubtitle}
                         </p>
                         <div className="flex flex-col sm:flex-row gap-3">
-                            <Link to="/projects" className="h-12 px-8 rounded-xl bg-primary text-black hover:bg-[#0fd630] transition-all transform hover:-translate-y-1 font-bold text-base shadow-[0_0_30px_rgba(19,236,55,0.4)] flex items-center justify-center gap-2">
-                                Tamamlanan Projeler
+                            <Link to="/contact" className="h-12 px-8 rounded-xl bg-primary text-black hover:bg-[#0fd630] transition-all transform hover:-translate-y-1 font-bold text-base shadow-[0_0_30px_rgba(19,236,55,0.4)] flex items-center justify-center gap-2">
+                                Ücretsiz Teklif Alın
                                 <span className="material-symbols-outlined">arrow_outward</span>
                             </Link>
                         </div>

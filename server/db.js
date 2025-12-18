@@ -209,13 +209,21 @@ function initTables() {
         )`);
 
         // Package Products Junction Table
-        db.run(`CREATE TABLE IF NOT EXISTS package_products (
-            id TEXT PRIMARY KEY,
-            packageId TEXT NOT NULL,
-            productId TEXT NOT NULL,
-            quantity INTEGER NOT NULL,
-            FOREIGN KEY (packageId) REFERENCES solar_packages(id),
-            FOREIGN KEY (productId) REFERENCES products(id)
+        db.run(`CREATE TABLE IF NOT EXISTS package_products (\r
+            id TEXT PRIMARY KEY,\r
+            packageId TEXT NOT NULL,\r
+            productId TEXT NOT NULL,\r
+            quantity INTEGER NOT NULL,\r
+            FOREIGN KEY (packageId) REFERENCES solar_packages(id),\r
+            FOREIGN KEY (productId) REFERENCES products(id)\r
+        )`);
+
+        // Newsletter Subscribers
+        db.run(`CREATE TABLE IF NOT EXISTS newsletter_subscribers (\r
+            id TEXT PRIMARY KEY,\r
+            email TEXT UNIQUE NOT NULL,\r
+            subscribedDate TEXT NOT NULL,\r
+            status TEXT DEFAULT 'active'\r
         )`);
     });
 }
