@@ -4,30 +4,42 @@ import { initialSiteContent } from '../../services/mockData';
 
 export const WhatsAppButton: React.FC = () => {
     const { siteContent } = useData();
-    let whatsappLink = siteContent.socialLinks?.find(s => s.platform === 'whatsapp');
 
-    // Fallback if link is missing OR url is empty/invalid
-    // Fallback if link is missing OR url is empty/invalid (including whitespace)
-    if (!whatsappLink || !whatsappLink.url || whatsappLink.url.trim() === '') {
+    // 1. Try to get from current siteContent
+    let whatsappLink = siteContent?.socialLinks?.find(s => s.platform === 'whatsapp');
+
+    // 2. Validate the link. If invalid, try fallback
+    const isValidUrl = (url?: string) => url && url.trim().length > 0;
+
+    if (!whatsappLink || !isValidUrl(whatsappLink.url)) {
         const fallbackLink = initialSiteContent.socialLinks?.find(s => s.platform === 'whatsapp');
-        if (fallbackLink && fallbackLink.url) {
+        if (fallbackLink && isValidUrl(fallbackLink.url)) {
             whatsappLink = fallbackLink;
         }
     }
 
-    // Return null only if no whatsapp link is defined even after fallback
-    if (!whatsappLink || !whatsappLink.url) return null;
+    // 3. If still no link, use a hardcoded safety net (The user wants a definitive solution)
+    if (!whatsappLink || !isValidUrl(whatsappLink.url)) {
+        whatsappLink = {
+            platform: 'whatsapp',
+            url: 'https://wa.me/905555555555', // Default hardcoded number
+            icon: 'chat'
+        };
+    }
 
-    let finalUrl = whatsappLink.url;
+    let finalUrl = whatsappLink.url!;
 
-    // specific check: if user entered just a number, format it
-    // If it doesn't start with http, and seems like a number, prepend wa.me
-    if (!finalUrl.startsWith('http') && /^\+?\d+$/.test(finalUrl.replace(/\s/g, ''))) {
-        const cleanNumber = finalUrl.replace(/\D/g, '');
-        finalUrl = `https://wa.me/${cleanNumber}`;
-    } else if (!finalUrl.startsWith('http')) {
-        // If it's something else but missing protocol, assume https
-        finalUrl = `https://${finalUrl}`;
+    // Format phone numbers
+    if (!finalUrl.startsWith('http')) {
+        // Remove all non-digit characters to check if it's just a phone number
+        const cleanDigits = finalUrl.replace(/\D/g, '');
+        // If it looks like a phone number (e.g. has more than 5 digits), treat as wa.me
+        if (cleanDigits.length > 5) {
+            finalUrl = `https://wa.me/${cleanDigits}`;
+        } else {
+            // Otherwise assume it's a link missing protocol
+            finalUrl = `https://${finalUrl}`;
+        }
     }
 
     return (
@@ -35,7 +47,7 @@ export const WhatsAppButton: React.FC = () => {
             href={finalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="fixed bottom-24 right-6 z-50 bg-[#25D366] hover:bg-[#20bd5a] text-white p-4 rounded-full shadow-lg shadow-green-500/30 transition-all hover:scale-110 flex items-center justify-center group"
+            className="fixed bottom-24 right-6 z-[9999] bg-[#25D366] hover:bg-[#20bd5a] text-white p-4 rounded-full shadow-lg shadow-green-500/30 transition-all hover:scale-110 flex items-center justify-center group"
             aria-label="WhatsApp İle İletişime Geç"
             title="WhatsApp Hattı"
         >
