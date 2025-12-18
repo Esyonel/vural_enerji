@@ -373,10 +373,10 @@ export const Home: React.FC = () => {
                                     {siteContent.ctaTitle}
                                 </h3>
                                 <p className="text-gray-300 mb-8 text-lg">{siteContent.ctaText}</p>
-                                <button className="bg-primary hover:bg-green-500 text-black px-8 py-4 rounded-xl font-bold transition-colors flex items-center gap-2 w-fit shadow-[0_0_20px_rgba(19,236,55,0.4)]">
-                                    {siteContent.ctaButtonText}
+                                <Link to="/contact" className="bg-primary hover:bg-green-500 text-black px-8 py-4 rounded-xl font-bold transition-colors flex items-center gap-2 w-fit shadow-[0_0_20px_rgba(19,236,55,0.4)]">
+                                    Ücretsiz Teklif Alın
                                     <span className="material-symbols-outlined">arrow_forward</span>
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     </div>
